@@ -1,12 +1,51 @@
+PATH
+  remote: ../ruby-interface
+  specs:
+    ruby-interface (0.0.1)
+      activesupport (> 0.1)
+      i18n (> 0.1)
+      ruby-interface
+
+PATH
+  remote: .
+  specs:
+    zactor (0.0.1)
+      activesupport (> 0.1)
+      bson (> 0.1)
+      bson_ext (> 0.1)
+      em-zeromq (> 0.1)
+      ffi (> 0.1)
+      ffi-rzmq (> 0.1)
+      ruby-interface
+      ruby-interface (> 0)
+      zactor
+
 GEM
   remote: http://rubygems.org/
   specs:
+    activesupport (3.0.5)
+    bluecloth (2.1.0)
+    bson (1.2.4)
+    bson_ext (1.2.4)
+    builder (3.0.0)
     diff-lcs (1.1.2)
+    em-zeromq (0.2.1)
+      eventmachine (>= 1.0.0.beta.3)
+      ffi-rzmq (>= 0.7.2)
+    eventmachine (1.0.0.beta.3)
+    ffi (1.0.6)
+      rake (>= 0.8.7)
+    ffi-rzmq (0.7.2)
+    geminabox (0.2.11)
+      builder
+      sinatra
     git (1.2.5)
+    i18n (0.5.0)
     jeweler (1.5.2)
       bundler (~> 1.0.0)
       git (>= 1.2.5)
       rake
+    rack (1.2.2)
     rake (0.8.7)
     rcov (0.9.9)
     rspec (2.3.0)
@@ -17,14 +56,24 @@ GEM
     rspec-expectations (2.3.0)
       diff-lcs (~> 1.1.2)
     rspec-mocks (2.3.0)
+    sinatra (1.2.1)
+      rack (~> 1.1)
+      tilt (>= 1.2.2, < 2.0)
+    tilt (1.2.2)
+    undev (0.0.7)
+      geminabox
     yard (0.6.5)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  bluecloth
   bundler (~> 1.0.0)
   jeweler (~> 1.5.2)
   rcov
   rspec (~> 2.3.0)
+  ruby-interface!
+  undev
   yard (~> 0.6.0)
+  zactor!

@@ -13,7 +13,7 @@ require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
   gem.name = "zactor"
-  gem.homepage = "http://github.com/prepor/zactor"
+  gem.homepage = "http://git.undev.cc/nptv/zactor"
   gem.license = "MIT"
   gem.summary = %Q{Zactor}
   gem.description = %Q{Zactor}
@@ -21,7 +21,13 @@ Jeweler::Tasks.new do |gem|
   gem.authors = ["Andrew Rudenko"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,
   # and development dependencies are only needed for development (ie running rake tasks, tests, etc)
-  #  gem.add_runtime_dependency 'jabber4r', '> 0.1'
+  gem.add_runtime_dependency 'ffi', '> 0.1'
+  gem.add_runtime_dependency 'ruby-interface', '> 0'
+  gem.add_runtime_dependency 'ffi-rzmq', '> 0.1'
+  gem.add_runtime_dependency 'em-zeromq', '> 0.1'
+  gem.add_runtime_dependency 'bson', '> 0.1'
+  gem.add_runtime_dependency 'bson_ext', '> 0.1'  
+  gem.add_runtime_dependency 'activesupport', '> 0.1'
   #  gem.add_development_dependency 'rspec', '> 1.2.3'
 end
 Jeweler::RubygemsDotOrgTasks.new
