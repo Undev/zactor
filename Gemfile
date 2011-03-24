@@ -13,6 +13,10 @@ group :development do
   gem "rcov", ">= 0"
   gem "bluecloth"
   gem "undev"
+  gem "rr"
+  gem "guard-rspec"
+  gem "growl"
+  gem "ruby-debug19"
 end
 
 gem "ruby-interface", :path => "../ruby-interface"

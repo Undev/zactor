@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Andrew Rudenko"]
-  s.date = %q{2011-03-23}
+  s.date = %q{2011-03-24}
   s.description = %q{Zactor}
   s.email = %q{ceo@prepor.ru}
   s.extra_rdoc_files = [
@@ -19,9 +19,11 @@ Gem::Specification.new do |s|
   s.files = [
     ".document",
     ".rspec",
+    ".yardopts",
     "Gemfile",
     "Gemfile.lock",
     "LICENSE.txt",
+    "README.md",
     "Rakefile",
     "VERSION",
     "lib/zactor.rb",
@@ -33,6 +35,7 @@ Gem::Specification.new do |s|
     "lib/zactor/t.rb",
     "lib/zactor/t2.rb",
     "lib/zactor/version.rb",
+    "spec/lib/zactor_spec.rb",
     "spec/spec_helper.rb",
     "zactor.gemspec"
   ]
@@ -52,7 +55,6 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<ruby-interface>, [">= 0"])
-      s.add_runtime_dependency(%q<zactor>, [">= 0"])
       s.add_development_dependency(%q<rspec>, ["~> 2.3.0"])
       s.add_development_dependency(%q<yard>, ["~> 0.6.0"])
       s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
@@ -60,27 +62,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<rcov>, [">= 0"])
       s.add_development_dependency(%q<bluecloth>, [">= 0"])
       s.add_development_dependency(%q<undev>, [">= 0"])
-      s.add_development_dependency(%q<rspec>, ["~> 2.3.0"])
-      s.add_development_dependency(%q<yard>, ["~> 0.6.0"])
-      s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
-      s.add_development_dependency(%q<jeweler>, ["~> 1.5.2"])
-      s.add_development_dependency(%q<rcov>, [">= 0"])
-      s.add_development_dependency(%q<bluecloth>, [">= 0"])
-      s.add_development_dependency(%q<undev>, [">= 0"])
-      s.add_development_dependency(%q<rspec>, ["~> 2.3.0"])
-      s.add_development_dependency(%q<yard>, ["~> 0.6.0"])
-      s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
-      s.add_development_dependency(%q<jeweler>, ["~> 1.5.2"])
-      s.add_development_dependency(%q<rcov>, [">= 0"])
-      s.add_development_dependency(%q<bluecloth>, [">= 0"])
-      s.add_development_dependency(%q<undev>, [">= 0"])
-      s.add_development_dependency(%q<rspec>, ["~> 2.3.0"])
-      s.add_development_dependency(%q<yard>, ["~> 0.6.0"])
-      s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
-      s.add_development_dependency(%q<jeweler>, ["~> 1.5.2"])
-      s.add_development_dependency(%q<rcov>, [">= 0"])
-      s.add_development_dependency(%q<bluecloth>, [">= 0"])
-      s.add_development_dependency(%q<undev>, [">= 0"])
+      s.add_development_dependency(%q<rr>, [">= 0"])
       s.add_runtime_dependency(%q<ffi>, ["> 0.1"])
       s.add_runtime_dependency(%q<ruby-interface>, ["> 0"])
       s.add_runtime_dependency(%q<ffi-rzmq>, ["> 0.1"])
@@ -90,7 +72,6 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<activesupport>, ["> 0.1"])
     else
       s.add_dependency(%q<ruby-interface>, [">= 0"])
-      s.add_dependency(%q<zactor>, [">= 0"])
       s.add_dependency(%q<rspec>, ["~> 2.3.0"])
       s.add_dependency(%q<yard>, ["~> 0.6.0"])
       s.add_dependency(%q<bundler>, ["~> 1.0.0"])
@@ -98,27 +79,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<rcov>, [">= 0"])
       s.add_dependency(%q<bluecloth>, [">= 0"])
       s.add_dependency(%q<undev>, [">= 0"])
-      s.add_dependency(%q<rspec>, ["~> 2.3.0"])
-      s.add_dependency(%q<yard>, ["~> 0.6.0"])
-      s.add_dependency(%q<bundler>, ["~> 1.0.0"])
-      s.add_dependency(%q<jeweler>, ["~> 1.5.2"])
-      s.add_dependency(%q<rcov>, [">= 0"])
-      s.add_dependency(%q<bluecloth>, [">= 0"])
-      s.add_dependency(%q<undev>, [">= 0"])
-      s.add_dependency(%q<rspec>, ["~> 2.3.0"])
-      s.add_dependency(%q<yard>, ["~> 0.6.0"])
-      s.add_dependency(%q<bundler>, ["~> 1.0.0"])
-      s.add_dependency(%q<jeweler>, ["~> 1.5.2"])
-      s.add_dependency(%q<rcov>, [">= 0"])
-      s.add_dependency(%q<bluecloth>, [">= 0"])
-      s.add_dependency(%q<undev>, [">= 0"])
-      s.add_dependency(%q<rspec>, ["~> 2.3.0"])
-      s.add_dependency(%q<yard>, ["~> 0.6.0"])
-      s.add_dependency(%q<bundler>, ["~> 1.0.0"])
-      s.add_dependency(%q<jeweler>, ["~> 1.5.2"])
-      s.add_dependency(%q<rcov>, [">= 0"])
-      s.add_dependency(%q<bluecloth>, [">= 0"])
-      s.add_dependency(%q<undev>, [">= 0"])
+      s.add_dependency(%q<rr>, [">= 0"])
       s.add_dependency(%q<ffi>, ["> 0.1"])
       s.add_dependency(%q<ruby-interface>, ["> 0"])
       s.add_dependency(%q<ffi-rzmq>, ["> 0.1"])
@@ -129,7 +90,6 @@ Gem::Specification.new do |s|
     end
   else
     s.add_dependency(%q<ruby-interface>, [">= 0"])
-    s.add_dependency(%q<zactor>, [">= 0"])
     s.add_dependency(%q<rspec>, ["~> 2.3.0"])
     s.add_dependency(%q<yard>, ["~> 0.6.0"])
     s.add_dependency(%q<bundler>, ["~> 1.0.0"])
@@ -137,27 +97,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<rcov>, [">= 0"])
     s.add_dependency(%q<bluecloth>, [">= 0"])
     s.add_dependency(%q<undev>, [">= 0"])
-    s.add_dependency(%q<rspec>, ["~> 2.3.0"])
-    s.add_dependency(%q<yard>, ["~> 0.6.0"])
-    s.add_dependency(%q<bundler>, ["~> 1.0.0"])
-    s.add_dependency(%q<jeweler>, ["~> 1.5.2"])
-    s.add_dependency(%q<rcov>, [">= 0"])
-    s.add_dependency(%q<bluecloth>, [">= 0"])
-    s.add_dependency(%q<undev>, [">= 0"])
-    s.add_dependency(%q<rspec>, ["~> 2.3.0"])
-    s.add_dependency(%q<yard>, ["~> 0.6.0"])
-    s.add_dependency(%q<bundler>, ["~> 1.0.0"])
-    s.add_dependency(%q<jeweler>, ["~> 1.5.2"])
-    s.add_dependency(%q<rcov>, [">= 0"])
-    s.add_dependency(%q<bluecloth>, [">= 0"])
-    s.add_dependency(%q<undev>, [">= 0"])
-    s.add_dependency(%q<rspec>, ["~> 2.3.0"])
-    s.add_dependency(%q<yard>, ["~> 0.6.0"])
-    s.add_dependency(%q<bundler>, ["~> 1.0.0"])
-    s.add_dependency(%q<jeweler>, ["~> 1.5.2"])
-    s.add_dependency(%q<rcov>, [">= 0"])
-    s.add_dependency(%q<bluecloth>, [">= 0"])
-    s.add_dependency(%q<undev>, [">= 0"])
+    s.add_dependency(%q<rr>, [">= 0"])
     s.add_dependency(%q<ffi>, ["> 0.1"])
     s.add_dependency(%q<ruby-interface>, ["> 0"])
     s.add_dependency(%q<ffi-rzmq>, ["> 0.1"])

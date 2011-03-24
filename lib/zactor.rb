@@ -53,7 +53,6 @@ module Zactor
     
     def deregister(zactor)
       @zactors.delete zactor
-      puts "ZACTORS: #{@zactors.size}"
     end
   end
   
@@ -91,18 +90,19 @@ module Zactor
     end
   end
   
-  def self.interfaced(base)
-    base.zactor do
-      event(:finish) { |o| o.finish }
-      event(:linked) do |o, msg, actor| 
-        o.linked actor
-        msk.reply :ok
-      end
-    end
-  end
   
   extend RubyInterface
   interface :zactor do
+    interfaced do
+      self.zactor do
+        event(:finish) { |o| o.finish }
+        event(:linked) do |o, msg, actor| 
+          o.linked actor
+          msk.reply :ok
+        end
+      end
+    end
+    
     include ZMQMEssages
     
     class_attribute :identity_val
@@ -139,15 +139,13 @@ module Zactor
     
     def send_request(actor, event, *args, &clb)
       return if @finished || Zactor.stub
-      ActiveSupport::Notifications.instrument('send_request.zactor', :event => event, :actor => actor, :params => args) do
-        @callbacks[clb.object_id.to_s] = clb if clb
-        send_to actor, messages { |m|
-          m.str 'request'
-          m.str "#{clb ? clb.object_id : ''}"
-          m.str event
-          m.str BSON.serialize({ 'args' => args })
-        }
-      end
+      @callbacks[clb.object_id.to_s] = clb if clb
+      send_to actor, messages { |m|
+        m.str 'request'
+        m.str "#{clb ? clb.object_id : ''}"
+        m.str event
+        m.str BSON.serialize({ 'args' => args })
+      }
     end
     
     def send_reply(actor, callback_id, *args)
@@ -161,13 +159,11 @@ module Zactor
     end
     
     def send_to(actor, mes)
-      ActiveSupport::Notifications.instrument('send_to.zactor', :actor => actor) do
-        pub = @pubs[actor['host']] ||= Zactor::ActorPub.new(self, "tcp://#{actor['host']}")
-        pub.send_messages(messages { |m|
-          m.str actor['identity']
-          m.str bson_actor
-        } + mes)
-      end
+      pub = @pubs[actor['host']] ||= Zactor::ActorPub.new(self, "tcp://#{actor['host']}")
+      pub.send_messages(messages { |m|
+        m.str actor['identity']
+        m.str bson_actor
+      } + mes)
     end
     
     def link(actor)
