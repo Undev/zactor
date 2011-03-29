@@ -54,7 +54,17 @@ module Zactor
     def deregister(zactor)
       @zactors.delete zactor
     end
+    
+    def finish
+      @zactors.keys.each(&:finish)
+      @broker.finish
+    end
+    
+    def clear
+      @zactors = {}
+    end
   end
+
   
   module ZMQMEssages
     class ZMQMessage
@@ -96,9 +106,12 @@ module Zactor
     interfaced do
       self.zactor do
         event(:finish) { |o| o.finish }
-        event(:linked) do |o, msg, actor| 
-          o.linked actor
-          msk.reply :ok
+        event(:link) do |o, msg| 
+          o.zactor.linked msg
+          # msg.reply :ok
+        end
+        event(:link_ping) do |o, msg|
+          msg.reply :pong
         end
       end
     end
@@ -123,15 +136,28 @@ module Zactor
       @actor = Zactor.get_actor @identity || self.class.identity_val || "actor.#{owner.object_id}-#{Zactor.host}"
       Zactor.register self
       return if Zactor.stub
-      @sub = Zactor::ActorSub.new self
-      @callbacks = {}
+      @sub = make_sub
+      @callbacks, @timeouts = {}, {}
       @pubs = {}
-      @pubs["0.0.0.0:#{Zactor.broker_port}"] = Zactor::ActorPub.new self, "inproc://zactor_broker_sub"
+      @pubs["0.0.0.0:#{Zactor.broker_port}"] = make_pub "inproc://zactor_broker_sub"
+    end
+    
+    def make_pub(endpoint)
+      Zactor::ActorPub.new self, endpoint
+    end
+    
+    def make_sub
+      Zactor::ActorSub.new self
     end
     
     def finish
       Zactor.deregister self
       return if Zactor.stub
+      if @linked
+        @linked.each do |link|
+          link.reply :finish
+        end
+      end
       @finished = true
       @sub.close
       @pubs.values.each(&:close)
@@ -146,6 +172,13 @@ module Zactor
         m.str event
         m.str BSON.serialize({ 'args' => args })
       }
+      @last_callback = clb.object_id.to_s
+      self
+    end
+    
+    def timeout(secs, &clb)
+      raise "Only for requests" unless @last_callback
+      @timeouts[@last_callback] = EM.add_timer(secs, &clb)
     end
     
     def send_reply(actor, callback_id, *args)
@@ -158,21 +191,44 @@ module Zactor
       }
     end
     
-    def send_to(actor, mes)
-      pub = @pubs[actor['host']] ||= Zactor::ActorPub.new(self, "tcp://#{actor['host']}")
+    def send_to(actor, mes = [])
+      pub = @pubs[actor['host']] ||= make_pub("tcp://#{actor['host']}")
       pub.send_messages(messages { |m|
         m.str actor['identity']
         m.str bson_actor
       } + mes)
     end
     
-    def link(actor)
-      
+    def link(actor, &clb)
+      Zactor.logger.debug { "Zactor: link #{actor} with #{self.actor}"}
+      send_request actor, :link do
+        clb.call
+      end
+      link_ping actor, &clb
+    end
+    
+    def link_ping(actor, &clb)
+      EM.add_timer(5) do
+        send_request(actor, :link_ping) do
+          link_ping
+        end.timeout(5) do
+          clb.call
+        end
+      end
+    end
+    
+    def linked(msg)
+      Zactor.logger.debug { "Zactor: linked #{actor} with #{msg.sender}"}
+      @linked ||= []
+      @linked << msg
     end
     
     def receive_reply(callback_id, *args)
       Zactor.logger.debug "Zactor: receive reply"
       if (callback = @callbacks[callback_id])
+        if timeout = @timeouts[callback_id]
+          EM.cancel_timer timeout
+        end
         callback.call(*args)
       end
     end

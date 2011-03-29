@@ -11,6 +11,11 @@ module Zactor
       Zactor.logger.debug "Broker: messages"
       @broker.pub.request messages
     end
+    
+    def close
+       @connection.unbind
+    rescue
+    end
   end
   
   class BrokerPub
@@ -22,8 +27,13 @@ module Zactor
     end
     
     def request(messages)
-      Zactor.logger.debug "Broker: request"
+      Zactor.logger.debug { "Broker: request #{messages.map(&:copy_out_string).inspect}" }
       send_messages messages
+    end
+    
+    def close
+       @connection.unbind
+    rescue
     end
   end
   
@@ -48,8 +58,14 @@ module Zactor
     def initialize(params = {})
       Zactor.logger.info "Broker: starting"
       @pub = BrokerPub.new self
-      BrokerSub.new self
-      BrokerPull.new self, :host => params[:balancer] if params[:balancer]
+      @subs = []
+      @subs << BrokerSub.new(self)
+      @subs << BrokerPull.new(self, :host => params[:balancer]) if params[:balancer]
+    end
+    
+    def finish
+      @pub.close
+      @subs.each(&:close)
     end
   end
 end
