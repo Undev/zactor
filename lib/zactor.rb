@@ -132,6 +132,8 @@ module Zactor
     end
     attr_accessor :actor, :identity
     attr_accessor :pubs
+    
+    # Инициализация, подписывается на сообщения для себя, создает сокет для отправки локальных сообщений
     def init
       @actor = Zactor.get_actor @identity || self.class.identity_val || "actor.#{owner.object_id}-#{Zactor.host}"
       Zactor.register self
@@ -142,14 +144,7 @@ module Zactor
       @pubs["0.0.0.0:#{Zactor.broker_port}"] = make_pub "inproc://zactor_broker_sub"
     end
     
-    def make_pub(endpoint)
-      Zactor::ActorPub.new self, endpoint
-    end
-    
-    def make_sub
-      Zactor::ActorSub.new self
-    end
-    
+    # Закрываем все соедниения и чистим сисьему. Обязательно нужно делать, когда объект перестает существовать
     def finish
       Zactor.deregister self
       return if Zactor.stub
@@ -161,6 +156,14 @@ module Zactor
       @finished = true
       @sub.close
       @pubs.values.each(&:close)
+    end
+    
+    def make_pub(endpoint)
+      Zactor::ActorPub.new self, endpoint
+    end
+    
+    def make_sub
+      Zactor::ActorSub.new self
     end
     
     def send_request(actor, event, *args, &clb)
@@ -209,10 +212,12 @@ module Zactor
     
     def link_ping(actor, &clb)
       EM.add_timer(5) do
-        send_request(actor, :link_ping) do
-          link_ping
-        end.timeout(5) do
-          clb.call
+        unless @finished
+          send_request(actor, :link_ping) do
+            link_ping actor, &clb
+          end.timeout(5) do
+            clb.call
+          end
         end
       end
     end
