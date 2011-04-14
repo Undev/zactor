@@ -8,7 +8,7 @@ GIT
 PATH
   remote: .
   specs:
-    zactor (0.0.3)
+    zactor (0.0.4)
       activesupport (> 0.1)
       bson (> 0.1)
       bson_ext (> 0.1)
@@ -20,7 +20,7 @@ PATH
 GEM
   remote: http://rubygems.org/
   specs:
-    activesupport (3.0.5)
+    activesupport (3.0.6)
     archive-tar-minitar (0.5.2)
     bluecloth (2.1.0)
     bson (1.2.4)
