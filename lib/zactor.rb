@@ -208,6 +208,7 @@ module Zactor
         clb.call
       end
       link_ping actor, &clb
+      self
     end
     
     def link_ping(actor, &clb)
