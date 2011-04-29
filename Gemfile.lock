@@ -25,7 +25,6 @@ GEM
     bluecloth (2.1.0)
     bson (1.2.4)
     bson_ext (1.2.4)
-    builder (3.0.0)
     columnize (0.3.2)
     configuration (1.2.0)
     diff-lcs (1.1.2)
@@ -36,9 +35,6 @@ GEM
     ffi (1.0.7)
       rake (>= 0.8.7)
     ffi-rzmq (0.7.2)
-    geminabox (0.2.13)
-      builder
-      sinatra
     growl (1.0.3)
     guard (0.3.0)
       open_gem (~> 1.4.2)
@@ -53,7 +49,6 @@ GEM
       ruby_core_source (>= 0.1.4)
     open_gem (1.4.2)
       launchy (~> 0.3.5)
-    rack (1.2.2)
     rake (0.8.7)
     rcov (0.9.9)
     rr (1.0.2)
@@ -79,14 +74,7 @@ GEM
       ruby-interface
     ruby_core_source (0.1.4)
       archive-tar-minitar (>= 0.5.2)
-    sinatra (1.2.1)
-      rack (~> 1.1)
-      tilt (>= 1.2.2, < 2.0)
     thor (0.14.6)
-    tilt (1.2.2)
-    undev (0.0.8)
-      geminabox
-      thor
     yard (0.6.5)
 
 PLATFORMS
@@ -102,6 +90,5 @@ DEPENDENCIES
   rr
   rspec (>= 2)
   ruby-debug19
-  undev
   yard (~> 0.6.0)
   zactor!

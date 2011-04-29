@@ -9,7 +9,6 @@ rescue Bundler::BundlerError => e
 end
 require 'rake'
 
-require 'undev/bundler'
 Bundler::GemHelper.install_tasks
 
 require 'rspec/core'
