@@ -15,6 +15,7 @@ class Server
     identity "server"
     
     event(:new_client) do |o, msg, login|
+      puts "NEW CLIENT!"
       o.new_client msg.sender, login
       msg.reply :ok
     end
@@ -34,8 +35,11 @@ class Server
   
   attr_accessor :clients
   def initialize
-    zactor.init
     @clients = {}
+  end
+  
+  def start
+    zactor.init
   end
   
   def new_client(client, login)
@@ -47,13 +51,23 @@ class Server
     end
   end
   
+  def stop
+    zactor.finish
+    EM.stop
+  end
+  
   def send_message(from, message)
     (clients.keys - [from]).each { |c| zactor.send_request c, :message, "#{clients[from]}: #{message}"}
   end
 end
 
+server = Server.new
+
+Signal.trap('INT') { server.stop } 
+Signal.trap('TERM') { server.stop }
+
 EM.run do
   Zactor.start ARGV[0]#, :debug => true
-  Server.new
+  server.start
   puts "Server started"
 end

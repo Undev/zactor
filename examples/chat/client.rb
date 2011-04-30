@@ -29,11 +29,9 @@ class Client
   end
   
   def connect
-    puts "Подключаемся"
     zactor.send_request(@server, :new_client, @login) do
-      puts "Поключились!"
-      zactor.link(@server) { connect }
-    end.timeout(5) { puts "Проблемы с подключением..." }
+      zactor.link(@server) { EM.add_timer(1) { connect } }
+    end
   end
   
   def send_message(text)

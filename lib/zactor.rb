@@ -181,7 +181,8 @@ module Zactor
     
     def timeout(secs, &clb)
       raise "Only for requests" unless @last_callback
-      @timeouts[@last_callback] = EM.add_timer(secs, &clb)
+      last_clb = @last_callback
+      @timeouts[last_clb] = EM.add_timer(secs) { @timeouts.delete(last_clb); clb.call }
     end
     
     def send_reply(actor, callback_id, *args)
@@ -204,18 +205,20 @@ module Zactor
     
     def link(actor, &clb)
       Zactor.logger.debug { "Zactor: link #{actor} with #{self.actor}"}
+      link_timer = {}
       send_request actor, :link do
         clb.call
+        EM.cancel_timer link_timer[:timer]
       end
-      link_ping actor, &clb
+      link_ping link_timer, actor, &clb
       self
     end
     
-    def link_ping(actor, &clb)
-      EM.add_timer(5) do
+    def link_ping(link_timer, actor, &clb)
+     link_timer[:timer] = EM.add_timer(5) do
         unless @finished
           send_request(actor, :link_ping) do
-            link_ping actor, &clb
+            link_ping link_timer, actor, &clb
           end.timeout(5) do
             clb.call
           end
