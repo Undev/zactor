@@ -204,6 +204,7 @@ module Zactor
     end
     
     def link(actor, &clb)
+      return if @finished || Zactor.stub
       Zactor.logger.debug { "Zactor: link #{actor} with #{self.actor}"}
       link_timer = {}
       send_request actor, :link do
