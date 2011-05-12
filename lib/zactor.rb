@@ -235,8 +235,8 @@ module Zactor
     
     def receive_reply(callback_id, *args)
       Zactor.logger.debug "Zactor: receive reply"
-      if (callback = @callbacks[callback_id])
-        if timeout = @timeouts[callback_id]
+      if (callback = @callbacks.delete(callback_id))
+        if timeout = @timeouts.delete(callback_id)
           EM.cancel_timer timeout
         end
         callback.call(*args)

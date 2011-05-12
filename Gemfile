@@ -9,7 +9,7 @@ group :development do
   gem "rr"
   gem "guard-rspec"
   gem "growl"
-  gem "ruby-debug19"
+  gem "ruby-debug19", :platform => :mri_19
   gem "em-spec", :git => "https://github.com/mloughran/em-spec.git", :branch => 'rspec2'
 end
 
