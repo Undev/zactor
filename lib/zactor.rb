@@ -9,7 +9,6 @@ module Zactor
   extend ActiveSupport::Autoload
 
   autoload :Broker
-  autoload :ActorSub
   autoload :ActorPub
   autoload :Message
   require 'zactor/log_subscriber'
@@ -17,19 +16,8 @@ module Zactor
   mattr_accessor :stub
   mattr_accessor :zmq, :logger
   
-  class << self    
-    def broker
-      @broker
-    end
-    
-    def broker_port
-      @broker_port
-    end
-    
-    def host
-      @host
-    end
-    
+  class << self
+    attr_accessor :broker, :broker_port, :host, :zactors
     def start(broker_port, params = {})
       self.zmq ||= EM::ZeroMQ::Context.new(1)
       self.logger ||= Logger.new(STDOUT).tap { |o| o.level = params[:debug] ? Logger::DEBUG : Logger::INFO }
@@ -39,6 +27,7 @@ module Zactor
       
       logger.info "Starting Zactor"
       @broker = Broker.new :balancer => params[:balancer]
+      @pubs = {}
     end
     
     def get_actor(pid, options = {})
@@ -48,16 +37,21 @@ module Zactor
     
     def register(zactor)
       @zactors ||= {}
-      @zactors[zactor] = true
+      @zactors[zactor.identity] = zactor
     end
     
     def deregister(zactor)
-      @zactors.delete zactor
+      @zactors.delete zactor.identity
     end
     
     def finish
-      @zactors.keys.each(&:finish)
+      @zactors.values.each(&:finish)
+      @pubs.values.each(&:close)
       @broker.finish
+    end
+    
+    def pub(actor)      
+      @pubs[actor['host']] ||= Zactor::ActorPub.new("tcp://#{actor['host']}")
     end
     
     def clear
@@ -131,17 +125,13 @@ module Zactor
       end
     end
     attr_accessor :actor, :identity
-    attr_accessor :pubs
     
     # Инициализация, подписывается на сообщения для себя, создает сокет для отправки локальных сообщений
     def init
-      @actor = Zactor.get_actor @identity || self.class.identity_val || "actor.#{owner.object_id}-#{Zactor.host}"
+      @actor = Zactor.get_actor identity
       Zactor.register self
       return if Zactor.stub
-      @sub = make_sub
       @callbacks, @timeouts = {}, {}
-      @pubs = {}
-      @pubs["0.0.0.0:#{Zactor.broker_port}"] = make_pub "inproc://zactor_broker_sub"
     end
     
     # Закрываем все соедниения и чистим сисьему. Обязательно нужно делать, когда объект перестает существовать
@@ -154,40 +144,62 @@ module Zactor
         end
       end
       @finished = true
-      @sub.close
-      @pubs.values.each(&:close)
     end
     
-    def make_pub(endpoint)
-      Zactor::ActorPub.new self, endpoint
-    end
-    
-    def make_sub
-      Zactor::ActorSub.new self
+    def identity
+      @identity ||= self.class.identity_val || "actor.#{owner.object_id}-#{Zactor.host}"
     end
     
     def send_request(actor, event, *args, &clb)
       return if @finished || Zactor.stub
       @callbacks[clb.object_id.to_s] = clb if clb
+      @last_callback = clb ? clb.object_id.to_s : ''
+      if actor['host'] == @actor['host']
+        internal_request actor, event, @last_callback, *args 
+      else
+        extertanl_request actor, event, @last_callback, *args
+      end      
+      self
+    end
+    
+    def internal_request(actor, event, clb_id, *args)
+      receiver = Zactor.zactors[actor['identity']]
+      return unless receiver
+      receiver.receive_request @actor, event, clb_id, *args
+    end
+    
+    def extertanl_request(actor, event, clb_id, *args)
       send_to actor, messages { |m|
         m.str 'request'
-        m.str "#{clb ? clb.object_id : ''}"
+        m.str clb_id
         m.str event
         m.str BSON.serialize({ 'args' => args })
       }
-      @last_callback = clb.object_id.to_s
-      self
     end
     
     def timeout(secs, &clb)
       raise "Only for requests" unless @last_callback
+      return unless @callbacks[@last_callback] # в случае если коллбэк уже был выполнен синхронно
       last_clb = @last_callback
       @timeouts[last_clb] = EM.add_timer(secs) { @timeouts.delete(last_clb); clb.call }
     end
     
     def send_reply(actor, callback_id, *args)
       return if @finished || Zactor.stub
-      Zactor.logger.debug "Zactor: send reply"
+      if actor['host'] == @actor['host']
+        internal_reply actor, callback_id, *args
+      else
+        external_reply actor, callback_id, *args
+      end
+    end
+    
+    def internal_reply(actor, callback_id, *args)
+      receiver = Zactor.zactors[actor['identity']]
+      return unless receiver
+      receiver.receive_reply callback_id, *args
+    end
+    
+    def external_reply(actor, callback_id, *args)
       send_to actor, messages { |m|
         m.str 'reply'
         m.str callback_id
@@ -196,7 +208,7 @@ module Zactor
     end
     
     def send_to(actor, mes = [])
-      pub = @pubs[actor['host']] ||= make_pub("tcp://#{actor['host']}")
+      pub = Zactor.pub actor
       pub.send_messages(messages { |m|
         m.str actor['identity']
         m.str bson_actor

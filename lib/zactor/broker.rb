@@ -9,26 +9,7 @@ module Zactor
     
     def on_readable(socket, messages)
       Zactor.logger.debug "Broker: messages"
-      @broker.pub.request messages
-    end
-    
-    def close
-       @connection.unbind
-    rescue
-    end
-  end
-  
-  class BrokerPub
-    include ZMQMEssages
-    def initialize(broker)
-      @broker = broker
-      @connection = Zactor.zmq.bind ZMQ::PUB, "inproc://zactor_broker_pub", self
-      @socket = @connection.socket
-    end
-    
-    def request(messages)
-      Zactor.logger.debug { "Broker: request #{messages.map(&:copy_out_string).inspect}" }
-      send_messages messages
+      @broker.dispatch_request messages
     end
     
     def close
@@ -57,14 +38,43 @@ module Zactor
     attr_accessor :sub, :pub
     def initialize(params = {})
       Zactor.logger.info "Broker: starting"
-      @pub = BrokerPub.new self
       @subs = []
       @subs << BrokerSub.new(self)
       @subs << BrokerPull.new(self, :host => params[:balancer]) if params[:balancer]
     end
     
+    def dispatch_request(messages)
+      to = messages.shift.copy_out_string
+      actor = Zactor.zactors[to]
+      return unless actor
+      Zactor.logger.debug "ZactorSub for #{actor.actor}: Messages!"
+      sender = messages.shift
+      case messages.shift.copy_out_string
+      when "reply"
+        reply actor, messages
+      when "request"
+        request actor, sender, messages
+      end
+    end
+    
+    def request(actor, sender_mes, messages)
+      Zactor.logger.debug "ZactorSub for #{actor.actor}: request!"
+      sender = BSON.deserialize(sender_mes.copy_out_string)
+      callback_id = messages[0].copy_out_string
+      event = messages[1].copy_out_string
+      args = BSON.deserialize(messages[2].copy_out_string)['args']      
+      actor.receive_request sender, event, callback_id, *args
+    end
+    
+    def reply(actor, messages)
+      Zactor.logger.debug "ZactorSub for #{actor.actor}: reply!"
+      callback_id = messages[0].copy_out_string
+      if callback_id != ''
+        actor.receive_reply callback_id, *BSON.deserialize(messages[1].copy_out_string)['args']
+      end
+    end
+    
     def finish
-      @pub.close
       @subs.each(&:close)
     end
   end

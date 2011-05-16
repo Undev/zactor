@@ -15,6 +15,8 @@ describe "Zactor" do
 
       def ping(actor = Zactor.get_actor("b")) 
         zactor.send_request actor, :ping do |res|
+          require 'ruby-debug'
+          debugger if $t
           reply
         end
       end
@@ -46,35 +48,43 @@ describe "Zactor" do
     end
   end
   
-  after do
+  def em_start(timeout = 5, &blk)
+    em(timeout) do
+      Zactor.start 8000, :debug => true
+      blk.call
+    end
+  end
+  
+  
+  def em_done
     Zactor.clear
     Zactor.finish
+    EM.add_timer(0.1) { done }
   end
   
   it "B должен получить сообщение" do
-    em do
-      Zactor.start 8000, :debug => true
-      Exchange::A.new.ping
+    em_start do
+      a = Exchange::A.new
       b = Exchange::B.new
-      mock.proxy(b).receive { done }
+      mock.proxy(b).receive { em_done }
+      a.ping
+      
     end
   end
   
   it "A должен получить ответ" do
-    em do
-      Zactor.start 8000, :debug => true
+    em_start do
       a = Exchange::A.new
-      a.ping
       Exchange::B.new
-      mock.proxy(a).reply { done }
+      mock.proxy(a).reply { em_done }
+      a.ping
     end
   end
   
   it "Если задан таймаут, то он должен срабатывать" do
-    em(7) do
-      Zactor.start 8000, :debug => true
+    em_start(7) do
       a = Exchange::A.new.ping.timeout(5) do
-        done
+        em_done
       end
     end
   end
