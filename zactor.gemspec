@@ -24,5 +24,6 @@ Gem::Specification.new do |s|
   s.add_dependency('bson', ["> 0.1"])
   s.add_dependency('bson_ext', ["> 0.1"])
   s.add_dependency('activesupport', ["> 0.1"])
+  s.add_dependency('uuid', ["> 0.1"])
 end
 

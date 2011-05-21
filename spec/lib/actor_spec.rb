@@ -21,10 +21,6 @@ describe "Zactor actor" do
     end
     
     describe "identity" do
-      it "по-умолчанию" do
-        actor.init
-        actor.actor.should eq({ 'identity' => "actor.#{actor.owner.object_id}-0.0.0.0:8000", 'host' => '0.0.0.0:8000' })
-      end
       
       it "с глобальным указанием" do
         A.zactor.identity "a"

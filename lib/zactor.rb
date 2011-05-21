@@ -4,7 +4,7 @@ require 'active_support/all'
 require 'ffi-rzmq'
 require 'em-zeromq'
 require 'bson'
-
+require 'uuid'
 module Zactor
   extend ActiveSupport::Autoload
 
@@ -147,7 +147,7 @@ module Zactor
     end
     
     def identity
-      @identity ||= self.class.identity_val || "actor.#{owner.object_id}-#{Zactor.host}"
+      @identity ||= self.class.identity_val || "actor.#{UUID.generate}-#{Zactor.host}"
     end
     
     def send_request(actor, event, *args, &clb)
