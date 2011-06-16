@@ -7,7 +7,7 @@ require 'bson'
 require 'uuid'
 module Zactor
   extend ActiveSupport::Autoload
-
+  LinkTimeout = LinkInterval = 20
   autoload :Broker
   autoload :ActorPub
   autoload :Message
@@ -228,11 +228,11 @@ module Zactor
     end
     
     def link_ping(link_timer, actor, &clb)
-     link_timer[:timer] = EM.add_timer(5) do
+     link_timer[:timer] = EM.add_timer(LinkInterval) do
         unless @finished
           send_request(actor, :link_ping) do
             link_ping link_timer, actor, &clb
-          end.timeout(5) do
+          end.timeout(LinkTimeout) do
             clb.call
           end
         end
@@ -259,10 +259,10 @@ module Zactor
       Zactor.logger.debug "Zactor: receive request"
       mes = Message.new self, :sender => sender, :callback_id => callback_id, :args => args
       if (event = self.class.events[event_name.to_sym])
-         event.call owner, mes, *args
-       else
-         raise "Undefined event #{event_name}"
-       end
+        event.call(owner, mes, *args)
+      else
+        raise "Undefined event #{event_name}"
+      end
     end
     
     def bson_actor
