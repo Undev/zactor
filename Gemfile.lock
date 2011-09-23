@@ -8,7 +8,7 @@ GIT
 PATH
   remote: .
   specs:
-    zactor (0.0.7)
+    zactor (0.0.8)
       activesupport (> 0.1)
       bson (> 0.1)
       bson_ext (> 0.1)
