@@ -33,7 +33,7 @@ GEM
       eventmachine (>= 1.0.0.beta.3)
       ffi-rzmq (>= 0.7.2)
     eventmachine (1.0.0.beta.3)
-    ffi (1.0.8)
+    ffi (1.0.9)
     ffi-rzmq (0.8.0)
     growl (1.0.3)
     guard (0.3.0)
