@@ -41,6 +41,7 @@ module Zactor
     end
     
     def deregister(zactor)
+      @zactors ||= {}
       @zactors.delete zactor.identity
     end
     
